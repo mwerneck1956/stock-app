@@ -11,63 +11,14 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./credentials.json"
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 
-def authenticate_google_drive():
-    """
-    Autentica o usuário com o Google Drive usando uma conta de serviço.
-    Retorna o serviço do Google Drive para operações de API.
-
-    O credentials file pode ser obtido criando uma Service Account em IAM & Admin, no Google Console.
-    """
-    credentials = Credentials.from_service_account_file(
-        './src/credentials.json', scopes=SCOPES
-    )
-    return build('drive', 'v3', credentials=credentials)
-
-
-def upload_to_drive(service, file_path, folder_id=None):
-    """
-    Faz upload de um arquivo genérico para o Google Drive.
-
-    Args:
-        service: Serviço autenticado do Google Drive.
-        file_path (str): Caminho do arquivo a ser enviado.
-        folder_id (str, opcional): ID da pasta onde o arquivo será enviado. Default é None.
-
-    Returns:
-        dict: Informações do arquivo enviado, incluindo ID e nome.
-    """
-    file_name = os.path.basename(file_path)
-
-    # Configura os metadados do arquivo
-    file_metadata = {'name': file_name}
-    if folder_id:
-        file_metadata['parents'] = [folder_id]
-
-    # Prepara o arquivo para upload
-    media = MediaFileUpload(file_path, resumable=True)
-
-    # Faz o upload
-    file = service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id, name'
-    ).execute()
-
-    return file
-
-
 from google.cloud import storage
-
 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     try: 
         storage_client = storage.Client()
-    
 
         bucket = storage_client.bucket(bucket_name)
-
-        # Cria o objeto blob (arquivo no bucket)
         blob = bucket.blob(destination_blob_name)
 
         # Faz o upload do arquivo

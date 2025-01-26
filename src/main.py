@@ -3,55 +3,81 @@ from datetime import datetime, timedelta
 from prefect import task, flow
 import pandas as pd
 import os
-from datetime import datetime, timedelta
 from storage import upload_blob
+from prefect.artifacts import create_table_artifact
 
-from prefect.artifacts import create_link_artifact
-
-
+# Defina o bucket e a lista de tickers
 bucket_name = os.getenv("BUCKET_NAME", "stocks-app")
-
-# Defina as variáveis de data e os tickers
-start_date = '2024-01-01'
-end_date = '2024-12-31'
-tickers = ["GOOGL", "AAPL"]
-
-
+tickers = [
+    "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
+]
 
 @task
-def download_stock_data(tickers, start_date, end_date, log_prints=True):
+def download_stock_data(tickers, start_date, end_date):
     data = {}
     for ticker in tickers:
-        df = yf.download(ticker, start=start_date, end=end_date)
-        data[ticker] = df
-        print(f"Dados de {ticker} baixados com sucesso {df['Close']}")
+        try:
+            df = yf.download(ticker, start=start_date, end=end_date)
+            if df.empty:
+                print(f"Nenhum dado disponível para {ticker}.")
+            else:
+                data[ticker] = df
+                print(f"Dados de {ticker} baixados com sucesso.")
+        except Exception as e:
+            print(f"Erro ao baixar dados de {ticker}: {e}")
     return data
 
 @task
-def upload_to_drive_and_create_link(data):
-    links = {}
+def save_partitioned_data(data):
+    base_dir = "data/partitioned"
+    os.makedirs(base_dir, exist_ok=True)
+    
     for ticker, df in data.items():
-        file_path = os.path.join(f"{ticker}_stock_data.csv")
-        df['Close'].to_csv(file_path)
+        df["Date"] = df.index
+        df["Day"] = df["Date"].dt.strftime("%Y-%m-%d")
+        
+        for day, group in df.groupby("Day"):
+            file_path = os.path.join(base_dir, f"{ticker}_{day}.csv")
+            print("File path is: ", file_path)
+            group.to_csv(file_path, index=False)
+            upload_blob(bucket_name,file_path, f"{ticker}/{day}.csv")
+            print(f"Dados de {ticker} para {day} salvos em {file_path}.")
 
-        upload_blob(bucket_name=bucket_name, source_file_name=file_path, destination_blob_name=file_path)
-        print(f"Dados de {ticker} salvos em {file_path}")
+@task
+def quality_check_and_log(data):
+    for ticker, df in data.items():
+        if df.empty:
+            print(f"Nenhum dado para {ticker}. Verifique o ticker ou o intervalo de datas.")
+        else:
+            print(f"Dados de {ticker} registrados com sucesso. Total de linhas: {len(df)}.")
 
-        links[ticker] = file_path
-        process_data(df['Close'])
+@task
+def calculate_top_movers(data):
+    try:
+        last_day_data = {}
+        for ticker, df in data.items():
+            df["Daily Change"] = df["Close"].pct_change()
+            last_day_data[ticker] = df.iloc[-1]["Daily Change"] if len(df) > 1 else 0
 
-        create_link_artifact(
-            key=ticker.lower(),
-            link=file_path,
-            description=ticker + "stock_data",
+        movers_df = pd.DataFrame.from_dict(last_day_data, orient="index", columns=["Daily Change"])
+        movers_df = movers_df.sort_values(by="Daily Change", ascending=False)
+
+        top_gainers = movers_df.head(3)
+        top_losers = movers_df.tail(3)
+
+        print("Top 3 ações que mais subiram:")
+        print(top_gainers)
+
+        print("Top 3 ações que mais caíram:")
+        print(top_losers)
+
+        create_table_artifact(
+            key="top_movers",
+            table=pd.concat([top_gainers, top_losers]).reset_index().to_dict(orient="records"),
+            description="Top 3 maiores altas e baixas no último dia.",
         )
-
-    return links
-
-@flow
-def process_data(tickers):
-    for stockPrice in tickers:
-      print(f"hs {stockPrice} ")
+    except Exception as e:
+        print(f"Erro ao calcular os movimentos do mercado: {e}")
 
 @flow
 def stock_workflow():
@@ -59,12 +85,10 @@ def stock_workflow():
     start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
 
     data = download_stock_data(tickers, start_date, end_date)
-    artifact_links = upload_to_drive_and_create_link(data)
-
-    for ticker, link in artifact_links.items():
-        print(f"Link para os dados de {ticker}: {link}")
+    save_partitioned_data(data)
+    quality_check_and_log(data)
+    calculate_top_movers(data)
 
 # Executar o fluxo
 if __name__ == "__main__":
-      #stock_workflow()
-      stock_workflow.serve(name ="stock-workflow" , cron = "0 19 * * *")
+    stock_workflow()
