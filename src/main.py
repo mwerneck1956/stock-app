@@ -5,6 +5,7 @@ import pandas as pd
 import os
 from storage import upload_blob
 from prefect.artifacts import create_table_artifact
+from matplotlib import pyplot as plt
 
 # Defina o bucket e a lista de tickers
 bucket_name = os.getenv("BUCKET_NAME", "stocks-app")
@@ -80,6 +81,46 @@ def calculate_top_movers(data):
     except Exception as e:
         print(f"Erro ao calcular os movimentos do mercado: {e}")
 
+
+@task
+def calculate_moving_average(data, window=3):
+    updated_data = {}
+    for ticker, df in data.items():
+        try:
+            df[f"Moving_Avg_{window}"] = df["Close"].rolling(window=window).mean()
+            updated_data[ticker] = df
+            print(f"Média móvel ({window} dias) calculada para {ticker}.")
+        except Exception as e:
+            print(f"Erro ao calcular média móvel para {ticker}: {e}")
+    return updated_data
+
+@task
+def plot_stock_data(data, window=3):
+    for ticker, df in data.items():
+        try:
+            plt.figure(figsize=(10, 6))
+
+            plt.plot(df.index, df["Close"], label="Close", marker="o")
+            
+            if f"Moving_Avg_{window}" in df.columns:
+                plt.plot(df.index, df[f"Moving_Avg_{window}"], label=f"Moving Avg ({window} days)", linestyle="--", color="orange")
+        
+            plt.title(f"{ticker}: Preços de Fechamento e Média Móvel")
+            plt.xlabel("Data")
+            plt.ylabel("Preço")
+            plt.legend()
+            plt.grid()
+            plt.tight_layout()
+            
+            output_dir = "plots"
+            os.makedirs(output_dir, exist_ok=True)
+            plot_path = os.path.join(output_dir, f"{ticker}_plot.png")
+            plt.savefig(plot_path)
+            plt.close()
+            
+            print(f"Gráfico para {ticker} salvo em {plot_path}.")
+        except Exception as e:
+            print(f"Erro ao plotar gráfico para {ticker}: {e}")
 @flow
 def stock_workflow():
     end_date = datetime.now().strftime('%Y-%m-%d')
@@ -89,6 +130,9 @@ def stock_workflow():
     save_partitioned_data(data)
     quality_check_and_log(data)
     calculate_top_movers(data)
+
+    data_with_moving_avg = calculate_moving_average(data)
+    plot_stock_data(data_with_moving_avg)
 
 # Executar o fluxo
 if __name__ == "__main__":
