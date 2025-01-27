@@ -12,6 +12,7 @@ tickers = [
     "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
 ]
 
+
 @task
 def download_stock_data(tickers, start_date, end_date):
     data = {}
@@ -57,11 +58,11 @@ def calculate_top_movers(data):
         last_day_data = {}
         for ticker, df in data.items():
             df["Daily Change"] = df["Close"].pct_change()
-            last_day_data[ticker] = df.iloc[-1]["Daily Change"] if len(df) > 1 else 0
+            last_day_data[ticker] = df.iloc[-1]["Daily Change"].values[0] if len(df) > 1 else 0
 
         movers_df = pd.DataFrame.from_dict(last_day_data, orient="index", columns=["Daily Change"])
         movers_df = movers_df.sort_values(by="Daily Change", ascending=False)
-
+        
         top_gainers = movers_df.head(3)
         top_losers = movers_df.tail(3)
 
@@ -72,7 +73,7 @@ def calculate_top_movers(data):
         print(top_losers)
 
         create_table_artifact(
-            key="top_movers",
+            key="top-movers",
             table=pd.concat([top_gainers, top_losers]).reset_index().to_dict(orient="records"),
             description="Top 3 maiores altas e baixas no último dia.",
         )
@@ -91,4 +92,5 @@ def stock_workflow():
 
 # Executar o fluxo
 if __name__ == "__main__":
-    stock_workflow()
+  stock_workflow()
+  #stock_workflow.serve(name ="stock-workflow" , cron = "0 19 * * *")

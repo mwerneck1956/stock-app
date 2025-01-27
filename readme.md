@@ -5,4 +5,6 @@ python -m venv env
 .\env\Scripts\activate
 
 ## Installing dependencies
-´pip install -r requiriments.txt´
+`pip install -r requiriments.txt`
+
+## Google Cloud Service Account Setup
