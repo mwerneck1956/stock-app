@@ -136,5 +136,5 @@ def stock_workflow():
 
 # Executar o fluxo
 if __name__ == "__main__":
-  stock_workflow()
-  #stock_workflow.serve(name ="stock-workflow" , cron = "0 19 * * *")
+  #stock_workflow()
+  stock_workflow.serve(name ="stock-workflow" , cron = "0 22 * * *")

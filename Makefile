@@ -26,6 +26,18 @@ install:
 		$(VENV_PATH)/Scripts/pip install -r requirements.txt; \
 	fi
 
+prefect-login:
+	@echo "Logging into Prefect Cloud..."
+	@if [ "$(API_KEY)" = "" ]; then \
+		echo "Error: API_KEY parameter is missing. Use 'make prefect-login API_KEY=<your_api_key>'."; \
+		exit 1; \
+	fi
+	@if [ -d "$(VENV_PATH)/bin" ]; then \
+		$(VENV_PATH)/bin/prefect cloud login --key $(API_KEY); \
+	else \
+		$(VENV_PATH)/Scripts/prefect cloud login --key $(API_KEY); \
+	fi
+
 run:
 	@echo $(GOOGLE_APPLICATION_CREDENTIALS)
 	@echo "Running script..."

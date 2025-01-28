@@ -33,6 +33,13 @@ make active-environment
 pip install -r requirements.txt
 ```  
 
+
+### Prefect login
+
+```bash
+make prefect-login API_KEY={API_KEY}
+```  
+
 ## Run the project
 
 Finally, to run the project:
