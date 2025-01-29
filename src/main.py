@@ -12,7 +12,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 # Defina o bucket e a lista de tickers
 bucket_name = os.getenv("BUCKET_NAME", "stocks-app")
 tickers = [
-    "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
+    "AAZ", "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
 ]
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=5))
@@ -126,7 +126,7 @@ def plot_stock_data(data, window=3):
             print(f"Gráfico para {ticker} salvo em {plot_path}.")
         except Exception as e:
             print(f"Erro ao plotar gráfico para {ticker}: {e}")
-@flow
+@flow(log_prints=True)
 def stock_workflow():
     end_date = datetime.now().strftime('%Y-%m-%d')
     start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
