@@ -7,12 +7,7 @@ import os
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./credentials.json"
 
-# Escopo para acessar o Google Drive
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-
-
 from google.cloud import storage
-
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     try: 
@@ -31,19 +26,6 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
 
 
 if __name__ == "__main__":
-    # Exemplo de uso
-    #drive_service = authenticate_google_drive()
-
-    # Substitua pelo caminho do arquivo que deseja enviar (deve estar no mesmo folder de execução do script)
-    #file_to_upload = "./src/example-2.txt"
-
-    # Substitua pelo ID da pasta no Google Drive (ou deixe como None para enviar na raiz)
-    # O folder_id pode ser encontrado clicando no Drive em Compartilhar Link
-    # Ex. do meu: https://drive.google.com/drive/folders/1oDw-8sjy3CnIE4bEKe52lyBpWV8UcXGz?usp=drive_link
-    #folder_id = "1Nf4ie8Y3rHNzmlivdszp_cTlSI3uu9Da"
-
-    #uploaded_file = upload_to_drive(drive_service, file_to_upload, folder_id)
-    #print(f"Arquivo enviado com sucesso! ID: {uploaded_file['id']}, Nome: {uploaded_file['name']}")
     """Uploads a file to the bucket."""
     # The ID of your GCS bucket
     bucket_name = "stocks-app"
