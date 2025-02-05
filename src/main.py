@@ -6,12 +6,21 @@ import os
 from storage import upload_blob
 from prefect.artifacts import create_table_artifact
 from matplotlib import pyplot as plt
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 
 # Defina o bucket e a lista de tickers
 bucket_name = os.getenv("BUCKET_NAME", "stocks-app")
 tickers = [
-    "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
+    "AAZ", "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
 ]
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=5))
+def fetch_stock_data(ticker, start_date, end_date):
+    df = yf.download(ticker, start=start_date, end=end_date)
+    if df.empty:
+        raise ValueError(f"Nenhum dado disponível para {ticker}.")
+    return df
 
 
 @task
@@ -19,14 +28,10 @@ def download_stock_data(tickers, start_date, end_date):
     data = {}
     for ticker in tickers:
         try:
-            df = yf.download(ticker, start=start_date, end=end_date)
-            if df.empty:
-                print(f"Nenhum dado disponível para {ticker}.")
-            else:
-                data[ticker] = df
-                print(f"Dados de {ticker} baixados com sucesso.")
+            data[ticker] = fetch_stock_data(ticker, start_date, end_date)
+            print(f"Dados de {ticker} baixados com sucesso.")
         except Exception as e:
-            print(f"Erro ao baixar dados de {ticker}: {e}")
+            print(f"Erro ao baixar dados de {ticker} após múltiplas tentativas: {e}")
     return data
 
 @task
@@ -121,7 +126,7 @@ def plot_stock_data(data, window=3):
             print(f"Gráfico para {ticker} salvo em {plot_path}.")
         except Exception as e:
             print(f"Erro ao plotar gráfico para {ticker}: {e}")
-@flow
+@flow(log_prints=True)
 def stock_workflow():
     end_date = datetime.now().strftime('%Y-%m-%d')
     start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
@@ -136,5 +141,11 @@ def stock_workflow():
 
 # Executar o fluxo
 if __name__ == "__main__":
-  #stock_workflow()
-  stock_workflow.serve(name ="stock-workflow" , cron = "0 22 * * *")
+    stock_workflow.from_source(
+      source="https://github.com/mwerneck1956/stock-app.git",
+      entrypoint="src/main.py:stock_workflow"
+      ).deploy(
+        name ="stock-workflow" , 
+        cron = "0 22 * * *", 
+        work_pool_name='stock'
+    )

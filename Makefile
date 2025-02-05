@@ -46,3 +46,12 @@ run:
 	else \
 		$(VENV_PATH)/Scripts/python ./src/main.py; \
 	fi
+
+run-storage:
+	@echo $(GOOGLE_APPLICATION_CREDENTIALS)
+	@echo "Running script..."
+	@if [ -d "$(VENV_PATH)/bin" ]; then \
+		$(VENV_PATH)/bin/python ./src/storage.py; \
+	else \
+		$(VENV_PATH)/Scripts/python ./src/storage.py; \
+	fi
