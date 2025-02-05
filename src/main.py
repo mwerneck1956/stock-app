@@ -7,13 +7,13 @@ from storage import upload_blob
 from prefect.artifacts import create_table_artifact
 from matplotlib import pyplot as plt
 from tenacity import retry, stop_after_attempt, wait_exponential
+from prefect.blocks.system import JSON
+
 
 
 # Defina o bucket e a lista de tickers
 bucket_name = os.getenv("BUCKET_NAME", "stocks-app")
-tickers = [
-    "AAZ", "GOOGL", "AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX", "NVDA", "AMD", "INTC"
-]
+JSON.load("tickers")
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=5))
 def fetch_stock_data(ticker, start_date, end_date):
@@ -147,5 +147,16 @@ if __name__ == "__main__":
       ).deploy(
         name ="stock-workflow" , 
         cron = "0 22 * * *", 
-        work_pool_name='stock'
+        work_pool_name='stock',
+        job_variables={"pip_packages": 
+            ["yfinance", 
+             "prefect", 
+             "matplotlib" , 
+             "google-api-python-client", 
+             "google-cloud",
+             "google-cloud-storage",
+             "tenacity",
+             "prefect-gcp"
+             ]}
     )
+
