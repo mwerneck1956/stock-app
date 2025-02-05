@@ -141,5 +141,11 @@ def stock_workflow():
 
 # Executar o fluxo
 if __name__ == "__main__":
-  stock_workflow()
-  #stock_workflow.serve(name ="stock-workflow" , cron = "0 22 * * *")
+    stock_workflow.from_source(
+      source="https://github.com/mwerneck1956/stock-app.git",
+      entrypoint="src/main.py:stock_workflow"
+      ).deploy(
+        name ="stock-workflow" , 
+        cron = "0 22 * * *", 
+        work_pool_name='stock'
+    )
