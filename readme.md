@@ -11,6 +11,26 @@ O **Stock-App** é uma aplicação desenvolvida para analisar dados de ações d
 - Armazenamento seguro de credenciais para acesso a serviços em nuvem.
 
 
+## Estrutura do Projeto
+O projeto foi estruturado com as seguintes etapas principais:
+
+1. **Coleta de Dados**: Utilizando a biblioteca `yfinance`, os dados históricos das ações são baixados para um intervalo de tempo especificado.
+2. **Processamento dos Dados**: Os dados são particionados por dia, armazenados e submetidos a verificações de qualidade.
+3. **Análises Estatísticas**: Cálculo das ações que mais variaram em valor e média móvel dos preços de fechamento.
+4. **Visualização**: Geração de gráficos para melhor compreensão das tendências de mercado.
+5. **Armazenamento Seguro**: Envio dos dados processados para um bucket no Google Cloud.
+
+## Decisões de Projeto
+- **Uso do `prefect` para orquestração**: Permite um fluxo estruturado e monitorável das tarefas.
+- **Retry com `tenacity`**: Implementado para lidar com falhas intermitentes na coleta de dados.
+- **Armazenamento no Google Cloud**: Garante persistência e acessibilidade dos dados processados.
+- **Uso de `matplotlib` para visualização**: Fornece gráficos intuitivos para análise de tendências.
+
+## Dificuldades Encontradas e Soluções
+### 1. Falhas na Coleta de Dados
+- **Problema**: Algumas requisições para `yfinance` falhavam devido a instabilidades na API.
+- **Solução**: Implementamos `retry` com `tenacity`, permitindo múltiplas tentativas antes de registrar um erro.
+
 ## Configuração de Conta de Serviço no Google Cloud
 
 1. Acesse o [Google Cloud Console](https://console.cloud.google.com).  
