@@ -62,7 +62,7 @@ make active-environment
 
 ## Installing the dependencies
 ```bash
-pip install -r requirements.txt
+make install
 ```
 
 ### Prefect Login 
