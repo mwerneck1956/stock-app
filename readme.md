@@ -27,13 +27,13 @@ O **Stock-App** é uma aplicação desenvolvida para analisar dados de ações d
 5. No painel de contas de serviço, clique nos três pontos à direita da conta criada e selecione **Gerenciar Chaves**.  
 6. Clique em **Adicionar Chave** > **Criar Nova Chave**.  
    - Escolha o formato JSON.  
-   - Baixe o arquivo gerado e salve-o como `credentials.json` na raiz do projeto.  
+   - Baixe o arquivo gerado e salve-o na sua conta do prefect como blocks
 
 Agora, seu ambiente está configurado para acessar o bucket do Google Cloud.
 
 ### Etapa de Configuração: Adicionando o Nome do Bucket
 
-Certifique-se de adicionar o `bucket-name` no arquivo `.env`. Por padrão,
+Certifique-se de adicionar o `bucket-name` na configuração dos blocks no prefect
 
 ## Ativando o ambiente  
 ```bash
