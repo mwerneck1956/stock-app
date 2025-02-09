@@ -38,13 +38,14 @@ Certifique-se de adicionar o `bucket-name` no arquivo `.env`. Por padrão,
 ## Ativando o ambiente  
 ```bash
 make active-environment
+```
 
 ## Installing the dependencies
 ```bash
 pip install -r requirements.txt
-```  
+```
 
-###  Login 
+### Prefect Login 
 
 ```bash
 make prefect-login API_KEY={API_KEY}
