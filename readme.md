@@ -1,40 +1,51 @@
 # Readme
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com).  
-2. In the navigation menu, click on **IAM & Admin** > **Service Accounts**.  
-3. Click **Create Service Account**.  
-   - Provide a name for the service account.  
-   - Add a description (optional).  
-   - Click **Create and Continue**.  
-4. Assign the required permissions:  
-   - **Storage Object Viewer**: for reading objects in the bucket.  
-   - **Storage Object Creator**: for writing objects in the bucket.  
-   - **Storage Object Admin**: for full read and write permissions.  
-   - After adding the permissions, click **Done**.  
-5. In the service account panel, click the three dots on the right of the created account and select **Manage Keys**.  
-6. Click **Add Key** > **Create New Key**.  
-   - Choose the JSON format.  
-   - Download the generated file and save it as `credentials.json` in the root of the project.  
+## Descrição
 
-Your environment is now configured to access the Google Cloud bucket.
+O **Stock-App** é uma aplicação desenvolvida para analisar dados de ações de empresas como Apple (AAPL) e Google (GOOGL). O projeto utiliza dados históricos para gerar visualizações que auxiliam na compreensão do desempenho dessas ações ao longo do tempo.
 
-### Configuration Step: Adding the Bucket Name
+## Funcionalidades
 
-Make sure to add the `bucket-name` in the `.env` file. By default,
+- Leitura de dados históricos das ações da Apple e do Google.
+- Geração de gráficos para visualização do desempenho das ações.
+- Armazenamento seguro de credenciais para acesso a serviços em nuvem.
 
 
-## Activating the environment  
+## Configuração de Conta de Serviço no Google Cloud
+
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com).  
+2. No menu de navegação, clique em **IAM e Admin** > **Contas de Serviço**.  
+3. Clique em **Criar Conta de Serviço**.  
+   - Forneça um nome para a conta de serviço.  
+   - Adicione uma descrição (opcional).  
+   - Clique em **Criar e Continuar**.  
+4. Atribua as permissões necessárias:  
+   - **Storage Object Viewer**: para leitura de objetos no bucket.  
+   - **Storage Object Creator**: para escrita de objetos no bucket.  
+   - **Storage Object Admin**: para permissões completas de leitura e escrita.  
+   - Após adicionar as permissões, clique em **Concluído**.  
+5. No painel de contas de serviço, clique nos três pontos à direita da conta criada e selecione **Gerenciar Chaves**.  
+6. Clique em **Adicionar Chave** > **Criar Nova Chave**.  
+   - Escolha o formato JSON.  
+   - Baixe o arquivo gerado e salve-o na sua conta do prefect como blocks
+
+Agora, seu ambiente está configurado para acessar o bucket do Google Cloud.
+
+### Etapa de Configuração: Adicionando o Nome do Bucket
+
+Certifique-se de adicionar o `bucket-name` na configuração dos blocks no prefect
+
+## Ativando o ambiente  
 ```bash
 make active-environment
-```  
+```
 
 ## Installing the dependencies
 ```bash
 pip install -r requirements.txt
-```  
+```
 
-
-### Prefect login
+### Prefect Login 
 
 ```bash
 make prefect-login API_KEY={API_KEY}
