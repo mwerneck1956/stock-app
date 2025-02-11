@@ -36,10 +36,6 @@ def download_stock_data(tickers, start_date, end_date):
 
 @task
 def save_partitioned_data(data):
-    """
-    Salva os dados das ações particionados por dia em arquivos CSV.
-    Cada arquivo é enviado para um bucket no Google Cloud.
-    """
     base_dir = "data/partitioned"
     os.makedirs(base_dir, exist_ok=True)
     
@@ -56,9 +52,6 @@ def save_partitioned_data(data):
 
 @task
 def quality_check_and_log(data):
-    """
-    Realiza uma verificação de qualidade nos dados baixados e registra logs.
-    """
     for ticker, df in data.items():
         if df.empty:
             print(f"Nenhum dado para {ticker}. Verifique o ticker ou o intervalo de datas.")
@@ -67,10 +60,6 @@ def quality_check_and_log(data):
 
 @task
 def calculate_top_movers(data):
-    """
-    Calcula as 3 ações que mais subiram e as 3 que mais caíram no último dia.
-    Cria um artefato com essas informações.
-    """
     try:
         last_day_data = {}
         for ticker, df in data.items():
@@ -151,7 +140,6 @@ def stock_workflow():
     data_with_moving_avg = calculate_moving_average(data)
     plot_stock_data(data_with_moving_avg)
 
-# Executar o fluxo
 if __name__ == "__main__":
     stock_workflow.from_source(
       source="https://github.com/mwerneck1956/stock-app.git",
