@@ -11,7 +11,7 @@ from prefect.blocks.system import JSON
 
 
 
-# Defina o bucket e a lista de tickers
+
 bucket_name = os.getenv("BUCKET_NAME", "stocks-app")
 JSON.load("tickers")
 
